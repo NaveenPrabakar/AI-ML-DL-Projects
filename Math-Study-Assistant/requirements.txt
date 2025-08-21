@@ -1,0 +1,6 @@
+pypdf 
+pinecone 
+tiktoken 
+orjson 
+python-dotenv 
+google.generativeai
