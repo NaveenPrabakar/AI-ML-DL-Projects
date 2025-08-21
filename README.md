@@ -178,7 +178,37 @@ Advanced RAG system for educational healthcare reference using OpenAI embeddings
 - No clinical decision-making capabilities
 - Comprehensive citation system
 
-### 9. 👍 Thumbs Up/Down Detection
+---
+
+### 9. 📐 Math Assistant - Educational RAG Tutor
+**Retrieval-Augmented Generation | Educational AI | Mathematical Reasoning**
+
+Intelligent math tutor combining PDF textbook ingestion, vector search, and AI-powered question answering with step-by-step solutions.
+
+**Key Features:**
+- **Dual AI Support**: Compatible with OpenAI GPT and Google Gemini models
+- **Smart Textbook Processing**: Optimized chunking strategy preserving mathematical context
+- **Step-by-Step Solutions**: Detailed explanations with proper mathematical reasoning
+- **Source Citations**: Transparent referencing with textbook page numbers
+- **Educational Focus**: Designed specifically for mathematical learning and tutoring
+
+**Technologies:** OpenAI/Gemini, Pinecone Vector DB, pypdf, Mathematical content processing
+
+**Technical Innovation:**
+- Overlapping text chunks (400 tokens, 49 overlap) for context preservation
+- Dual embedding support (1536D OpenAI, 768D Gemini)
+- Educational prompt engineering with citation requirements
+- Mathematical notation handling in plain text format
+
+**Use Cases:**
+- Statistics problem solving with descriptive analytics
+- Z-score calculations and interpretation
+- Mathematical concept explanation with textbook references
+- Student homework assistance with proper attribution
+
+---
+
+### 10. 👍 Thumbs Up/Down Detection
 **Computer Vision | Gesture Recognition | Teachable Machine**
 
 Real-time hand gesture recognition using Google's Teachable Machine platform.
@@ -240,14 +270,14 @@ Real-time hand gesture recognition using Google's Teachable Machine platform.
 | KNIME Pipeline | Model Comparison | **Random Forest Best** | KNIME, Multiple ML |
 | LLM Comparison | Performance Analysis | **ChatGPT Winner** | LM Studio, Local Models |
 | Medical RAG System | Risk Classification | **3-Level System** | OpenAI, Pinecone |
+| Math Assistant Tutor | Educational Accuracy | **Step-by-Step Solutions** | OpenAI/Gemini, Pinecone |
 | Gesture Recognition | Real-time Accuracy | **95%** | Teachable Machine |
 
 ---
 
-
 ## 📝 Portfolio Statistics
 
-- **Total Projects**: 9 comprehensive ML/AI projects
+- **Total Projects**: 10 comprehensive ML/AI projects
 - **Technologies Used**: 20+ different tools and platforms
 - **Code Examples**: 100+ practical implementations
 - **Documentation Pages**: 200+ pages of technical content
