@@ -1,193 +1,169 @@
-# Math Assistant - RAG-Powered Mathematical Tutor
+# Math Assistant - ChatGPT-like Interface
 
-A Retrieval-Augmented Generation (RAG) system that creates an intelligent math tutor by combining PDF textbook ingestion, vector search, and AI-powered question answering. The system processes mathematical textbooks and provides step-by-step solutions with proper citations.
+A modern, responsive web interface for your AI math assistant backend. This interface provides a ChatGPT-like experience with real-time chat functionality, session management, and beautiful UI design.
 
 ## Features
 
-- **PDF Textbook Ingestion**: Automatically extracts and chunks mathematical content from PDF textbooks
-- **Vector Search**: Uses Pinecone for efficient semantic search of mathematical concepts
-- **Dual AI Support**: Compatible with both OpenAI GPT models and Google Gemini
-- **Citation System**: Provides proper source citations with page numbers
-- **Chunking Strategy**: Optimized text chunking with overlap for mathematical context preservation
-- **Educational Focus**: Designed specifically for mathematical tutoring with step-by-step explanations
+- 🎨 **Modern UI Design**: Clean, responsive interface with smooth animations
+- 💬 **Real-time Chat**: Instant message sending and receiving
+- 📱 **Mobile Responsive**: Works perfectly on desktop, tablet, and mobile devices
+- ⏱️ **Typing Indicators**: Visual feedback when the AI is processing
+- 🔄 **Session Management**: Maintains conversation context across requests
+- 🧹 **Clear Chat**: Easy way to start fresh conversations
+- ⌨️ **Keyboard Shortcuts**: Enter to send, Shift+Enter for new lines
+- 📊 **Character Counter**: Track message length with visual feedback
+- 🔔 **Notifications**: Success and error notifications
+- 🎯 **Math Formatting**: Support for inline and block math expressions
 
-## Architecture
+## File Structure
 
-The system consists of three main components:
-
-1. **Document Processing**: PDF extraction, text chunking, and embedding generation
-2. **Vector Storage**: Pinecone index for storing and retrieving mathematical content
-3. **Question Answering**: AI-powered response generation with source citations
-
-## Prerequisites
-
-### API Keys Required
-
-```bash
-OPENAI_API_KEY=""        # For OpenAI implementation
-PINECONE_API_KEY=""      # For vector storage
-GEMINI_API_KEY=""        # For Google Gemini implementation
+```
+TypicalMathAssistant/
+├── math.py              # Your FastAPI backend
+├── math_knowledge.pdf   # Math knowledge base
+├── index.html          # Main HTML interface
+├── styles.css          # CSS styling
+├── script.js           # JavaScript functionality
+└── README.md           # This file
 ```
 
-### Python Dependencies
+## Setup Instructions
+
+### 1. Backend Setup
+
+Make sure your FastAPI backend is running:
 
 ```bash
-pip install pypdf pinecone openai tiktoken orjson python-dotenv google.generativeai
+# Install dependencies (if not already done)
+pip install fastapi uvicorn redis langchain openai faiss-cpu
+
+# Set environment variables
+export OPENAI_API_KEY="your-openai-api-key"
+export REDIS_URL="your-redis-url"
+
+# Run the backend
+uvicorn math:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Configuration
+### 2. Frontend Setup
 
-### OpenAI Implementation
-- **Embedding Model**: `text-embedding-3-small` (1536 dimensions)
-- **Generation Model**: `gpt-3.5-turbo`
-- **Index Name**: `math-index`
+The frontend files are ready to use. Simply open `index.html` in your web browser, or serve them using a local server:
 
-### Google Gemini Implementation
-- **Embedding Model**: `models/embedding-001` (768 dimensions)  
-- **Generation Model**: `gemini-1.5-flash`
-- **Index Name**: `math-index-gemini`
+```bash
+# Using Python's built-in server
+python -m http.server 8080
 
-### Tunable Parameters
+# Using Node.js (if you have it installed)
+npx serve .
 
-```python
-TOP_K = 10              # Number of chunks to retrieve
-MIN_SIM = 0.1           # Minimum similarity threshold
-CHUNK_TOKENS = 400      # Tokens per chunk
-CHUNK_OVERLAP = 49      # Overlap between chunks
-MAX_CHUNK_TEXT = 2000   # Max characters per chunk (Gemini)
+# Using PHP (if you have it installed)
+php -S localhost:8080
+```
+
+### 3. Configuration
+
+Update the API URL in `script.js` if your backend is running on a different port:
+
+```javascript
+const API_BASE_URL = 'http://localhost:8000'; // Change this if needed
 ```
 
 ## Usage
 
-### 1. Environment Setup
+1. **Open the Interface**: Navigate to `index.html` in your browser
+2. **Start Chatting**: Type your math question in the input field
+3. **Send Messages**: Press Enter or click the send button
+4. **Clear Chat**: Use the "Clear Chat" button to start fresh
+5. **View History**: Scroll through your conversation history
 
-```python
-import os
-os.environ["OPENAI_API_KEY"] = "your-openai-key"
-os.environ["PINECONE_API_KEY"] = "your-pinecone-key" 
-os.environ["GEMINI_API_KEY"] = "your-gemini-key"
-```
+## API Endpoints
 
-### 2. Initialize the System
+The interface communicates with your FastAPI backend using these endpoints:
 
-For OpenAI implementation:
-```python
-from openai import OpenAI
-from pinecone import Pinecone, ServerlessSpec
+- `POST /ask` - Send a question and get an answer
+- `POST /clear_session` - Clear the current session
 
-client = OpenAI(api_key=OPENAI_API_KEY)
-pc = Pinecone(api_key=PINECONE_API_KEY)
-index = pc.Index(PINECONE_INDEX)
-```
+## Features in Detail
 
-For Gemini implementation:
-```python
-import google.generativeai as genai
-genai.configure(api_key=GEMINI_API_KEY)
-```
+### Message Formatting
 
-### 3. Ingest a Textbook
+The interface supports various formatting options:
 
-```python
-# Ingest PDF and create searchable chunks
-n = ingest_pdf_safe(
-    "/path/to/textbook.pdf", 
-    source="Textbook Name", 
-    namespace="math_textbook"
-)
-print(f"Indexed {n} chunks")
-```
+- **Line Breaks**: Automatically converted to `<br>` tags
+- **Code Blocks**: Text between backticks (`code`) is formatted as inline code
+- **Math Expressions**: 
+  - Inline math: `$x^2 + y^2 = z^2$`
+  - Block math: `$$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$`
 
-### 4. Ask Questions
+### Responsive Design
 
-```python
-result = answer_query("""
-Ages of students in a class:
-Given the data: 19, 21, 22, 20, 24, 22, 20, 19, 21
-a) Find the mean, median, and mode
-b) Compute the range, variance, and standard deviation
-""", namespace="math_textbook")
+The interface adapts to different screen sizes:
 
-print(result['answer'])
-```
+- **Desktop**: Full-width layout with optimal spacing
+- **Tablet**: Adjusted padding and font sizes
+- **Mobile**: Compact layout with touch-friendly buttons
 
-## Key Functions
+### Session Management
 
-### Document Processing
+- Each browser session maintains conversation context
+- Sessions are stored in Redis with a 10-minute TTL
+- Clear chat functionality resets both frontend and backend state
 
-- `pdf_to_pages(path)`: Extracts text from PDF pages
-- `chunk_text(text, page)`: Creates overlapping text chunks
-- `ingest_pdf_safe()`: Complete PDF ingestion pipeline
+### Error Handling
 
-### Retrieval & QA
+- Network errors are displayed as user-friendly messages
+- Loading states prevent multiple simultaneous requests
+- Graceful degradation when backend is unavailable
 
-- `retrieve(query, namespace)`: Semantic search for relevant content
-- `answer_query(query, namespace)`: End-to-end question answering
-- `build_messages()`: Constructs prompts with retrieved context
+## Customization
 
-### Utilities
+### Styling
 
-- `num_tokens(text)`: Estimates token count
-- `flatten_embedding()`: Handles embedding format variations
-- `safe_split_text()`: Ensures chunks don't exceed size limits
+You can customize the appearance by modifying `styles.css`:
 
-## Response Format
+- **Colors**: Update CSS variables for theme colors
+- **Fonts**: Change the font family in the body selector
+- **Layout**: Adjust spacing and sizing in the container classes
 
-Each answer includes:
-- **Step-by-step solution**: Detailed mathematical explanation
-- **Citations**: Source references with page numbers `[Source, p.Page]`
-- **Disclaimer**: Educational use reminder
+### Functionality
 
-```python
-{
-    "answer": "Step-by-step solution with calculations...",
-    "citations": [{"source": "Textbook Name", "page": 42}],
-    "disclaimer": "Educational use only. Always double-check solutions."
-}
-```
+Modify `script.js` to add new features:
 
-## System Prompts
+- **Message Formatting**: Extend the `formatMessageContent` function
+- **API Integration**: Add new endpoints or modify request handling
+- **UI Interactions**: Add new event listeners or UI components
 
-The assistant is configured with educational-focused prompts:
+## Browser Compatibility
 
-```
-You are a helpful **math tutor assistant**.
-Rules: use provided textbook sources (not required), explain step by step, 
-and cite like [Source, p.Page] if textbook is used.
-```
+The interface works on all modern browsers:
 
-## Best Practices
+- ✅ Chrome 80+
+- ✅ Firefox 75+
+- ✅ Safari 13+
+- ✅ Edge 80+
 
-### For Mathematical Content
-- Use textbooks with clear mathematical notation
-- Ensure PDFs have extractable text (not image-only)
-- Consider subject-specific namespaces for organization
+## Troubleshooting
 
-### For Performance
-- Adjust `TOP_K` based on content complexity
-- Fine-tune similarity thresholds for your domain
-- Monitor chunk sizes to balance context and relevance
+### Common Issues
 
-### For Accuracy
-- Always include the educational disclaimer
-- Encourage users to verify solutions
-- Provide step-by-step explanations for transparency
+1. **CORS Errors**: Make sure your FastAPI backend has CORS enabled
+2. **Connection Refused**: Verify the backend is running on the correct port
+3. **Session Issues**: Check that Redis is properly configured and running
 
-## Limitations
+### Debug Mode
 
-- PDF text extraction quality depends on source formatting
-- Mathematical notation may not render perfectly in plain text
-- AI responses should always be verified for accuracy
-- System performance depends on the quality of ingested textbooks
-
-## License
-
-Educational use only. This system is designed for learning and should not replace professional mathematical instruction or verification.
+Open the browser's developer console (F12) to see detailed error messages and API responses.
 
 ## Contributing
 
-When extending this system:
-1. Maintain educational focus and safety guidelines
-2. Preserve citation and disclaimer functionality  
-3. Test with diverse mathematical content types
-4. Consider accessibility and clarity in responses
+Feel free to enhance the interface by:
+
+- Adding new UI components
+- Improving accessibility
+- Adding more formatting options
+- Optimizing performance
+- Adding unit tests
+
+## License
+
+This interface is provided as-is for use with your math assistant backend. 

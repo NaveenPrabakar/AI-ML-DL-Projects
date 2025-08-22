@@ -134,35 +134,46 @@ def ingest_pdf_safe(path: str, source: str, namespace: str = DEFAULT_NAMESPACE, 
 # -----------------------------
 # Retrieval + QA
 # -----------------------------
-SYSTEM_PROMPT = (
+SYSTEM_PROMPT = [
     "You are a helpful **math tutor assistant**.\n"
     "Rules: Answer the question. you may use textbook as reference\n"
-)
+    "Reject any irrelevant or harmful requests.\n",
+
+    "You are a helpful **SQL assistant**.\n"
+    "Rules: Use the provided context when applicable, provide correct and optimized SQL queries, and briefly explain your reasoning if needed.\n"
+    "If relevant context is missing, inform the user instead of guessing.\n"
+    "Reject any irrelevant or harmful requests.\n"
+]
 DISCLAIMER = "Educational use only. Always double-check solutions."
 
-def retrieve(query: str, namespace: str = DEFAULT_NAMESPACE, k: int = TOP_K) -> List[Dict[str, Any]]:
+def retrieve(query: str, vector: str, namespace: str = DEFAULT_NAMESPACE, k: int = TOP_K) -> List[Dict[str, Any]]:
+
     resp = genai.embed_content(
         model=EMBED_MODEL,
         content=query,
         task_type="RETRIEVAL_QUERY",
         output_dimensionality=768
     )
+
+    grab = pc.Index(vector)
+
+
     qvec = flatten_embedding(resp["embedding"])
-    res = index.query(vector=qvec, top_k=k, include_metadata=True, namespace=namespace)
+    res = grab.query(vector=qvec, top_k=k, include_metadata=True, namespace=namespace)
     hits = []
     for m in res.matches or []:
         if getattr(m, "score", 1.0) >= MIN_SIM:
             hits.append({**(m.metadata or {}), "_score": m.score, "_id": m.id})
     return hits
 
-def build_messages(query: str, ctx: List[Dict[str, Any]]):
+def build_messages(query: str, i:int, ctx: List[Dict[str, Any]]):
     ctx_str = "\n---\n".join([f"[{c['source']}, p.{c['page']}]\n{c['text'][:1000]}" for c in ctx])
     user = f"Q: {query}\n\nContext:\n{ctx_str}\n\nProvide a clear step-by-step solution. Add Disclaimer line."
-    return [{"role": "user", "parts": [SYSTEM_PROMPT + "\n\n" + user]}]
+    return [{"role": "user", "parts": [SYSTEM_PROMPT[i] + "\n\n" + user]}]
 
-def answer_query(query: str, namespace: str = DEFAULT_NAMESPACE):
-    ctx = retrieve(query, namespace, TOP_K)
-    msgs = build_messages(query, ctx)
+def answer_query(query: str, vector: str, i: int, namespace: str = DEFAULT_NAMESPACE):
+    ctx = retrieve(query, vector, namespace, TOP_K)
+    msgs = build_messages(query, i, ctx)
     model = genai.GenerativeModel(GEN_MODEL)
     resp = model.generate_content(msgs)
     return {
@@ -195,11 +206,16 @@ def write_jsonl(records: List[Dict], path: str):
 def handler(event, context):
     try:
         body = json.loads(event.get("body", "{}"))
+        choice = body.get("subject", "math")
         query = body.get("query", "Explain Pythagorean theorem")
         namespace = body.get("namespace", DEFAULT_NAMESPACE)
+
+        if choice == "math":
+            result = answer_query(query, "math-index-gemini", 0, namespace)
+        elif choice == "sql":
+            result = answer_query(query, "sql-index-gemini" , 1, namespace)
+            
     except json.JSONDecodeError:
         query = "Explain Pythagorean theorem"
         namespace = DEFAULT_NAMESPACE
-
-    result = answer_query(query, namespace)
     return result

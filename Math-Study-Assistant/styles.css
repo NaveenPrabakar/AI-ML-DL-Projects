@@ -424,3 +424,19 @@ body {
 .chat-container::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.3);
 } 
+
+.subject-select {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.subject-select select {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}

@@ -6,15 +6,17 @@ const clearChatButton = document.getElementById('clearChat');
 const typingIndicator = document.getElementById('typingIndicator');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const charCount = document.getElementById('charCount');
+const subjectSelect = document.getElementById('subject');
+const assistantTitle = document.getElementById('assistantTitle');
 
 
-const API_BASE_URL = 'https://kp2ar7bpxi.execute-api.us-east-2.amazonaws.com'; 
+const API_BASE_URL = 'https://kp2ar7bpxi.execute-api.us-east-2.amazonaws.com';
 
 
 let isProcessing = false;
 
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     setupEventListeners();
     autoResizeTextarea();
     updateCharCount();
@@ -22,31 +24,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function setupEventListeners() {
-    
+
     sendButton.addEventListener('click', sendMessage);
-    
-    
-    messageInput.addEventListener('keydown', function(e) {
+
+
+    messageInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-    
-    
-    messageInput.addEventListener('input', function() {
+
+
+    messageInput.addEventListener('input', function () {
         autoResizeTextarea();
         updateCharCount();
         updateSendButton();
     });
-    
-    
+
+    subjectSelect.addEventListener('change', () => {
+        const subject = subjectSelect.value;
+        assistantTitle.textContent = subject === 'math' ? "Math Assistant" : "SQL Assistant";
+
+        const icon = document.getElementById('assistantIcon');
+        if (subject === 'math') {
+            icon.className = 'fas fa-calculator';
+        } else {
+            icon.className = 'fas fa-database';
+        }
+
+        const message = document.getElementById('messageInput');
+        message.placeholder = subject === 'math' ? "Ask me a math question..." : "Ask me a SQL question...";
+
+        // Replace welcome message
+        clearChatMessages();
+        addMessage(
+            subject === 'math'
+                ? "Hello! I'm your AI math assistant. I can help you with:\n- Solving mathematical problems\n- Explaining concepts\n- Step-by-step solutions"
+                : "Hello! I'm your AI SQL assistant. I can help you with:\n- Writing and optimizing SQL queries\n- Explaining database concepts\n- Providing step-by-step query breakdowns"
+            ,
+            'assistant'
+        );
+    });
+
+
+
     clearChatButton.addEventListener('click', clearChat);
-    
-    
+
+
     messageInput.focus();
 }
 
+function clearChatMessages() {
+    const messages = chatMessages.querySelectorAll('.message');
+    messages.forEach(m => m.remove());
+}
 
 function autoResizeTextarea() {
     messageInput.style.height = 'auto';
@@ -57,8 +89,8 @@ function autoResizeTextarea() {
 function updateCharCount() {
     const count = messageInput.value.length;
     charCount.textContent = `${count}/2000`;
-    
-    
+
+
     if (count > 1800) {
         charCount.style.color = '#dc3545';
     } else if (count > 1500) {
@@ -93,6 +125,8 @@ async function sendMessage() {
     // Show typing indicator
     showTypingIndicator();
 
+    const subjectSelect = document.getElementById('subject');
+
     try {
         // Make API call
         const response = await fetch(`${API_BASE_URL}/query`, {
@@ -100,7 +134,7 @@ async function sendMessage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query: message }),  // <-- Fixed key here
+            body: JSON.stringify({ query: message, subject: subjectSelect.value }),  // <-- Fixed key here
             credentials: 'include' // Include cookies for session management
         });
 
@@ -242,11 +276,6 @@ async function clearChat() {
     if (isProcessing) return;
 
     try {
-        // Clear session on server
-        await fetch(`${API_BASE_URL}/clear_session`, {
-            method: 'POST',
-            credentials: 'include'
-        });
 
         // Clear chat messages (keep welcome message)
         const messages = chatMessages.querySelectorAll('.message:not(:first-child)');
@@ -388,14 +417,14 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Handle page visibility changes (pause/resume processing)
-document.addEventListener('visibilitychange', function() {
+document.addEventListener('visibilitychange', function () {
     if (document.hidden && isProcessing) {
         // Page is hidden, could pause processing if needed
     }
 });
 
 // Handle beforeunload (warn if processing)
-window.addEventListener('beforeunload', function(e) {
+window.addEventListener('beforeunload', function (e) {
     if (isProcessing) {
         e.preventDefault();
         e.returnValue = 'You have a message being processed. Are you sure you want to leave?';
