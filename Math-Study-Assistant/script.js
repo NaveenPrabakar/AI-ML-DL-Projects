@@ -14,6 +14,7 @@ const API_BASE_URL = 'https://kp2ar7bpxi.execute-api.us-east-2.amazonaws.com';
 
 
 let isProcessing = false;
+let sessionId = null; 
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -134,7 +135,7 @@ async function sendMessage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query: message, subject: subjectSelect.value }),  // <-- Fixed key here
+            body: JSON.stringify({ query: message, subject: subjectSelect.value, session_id: sessionId }),  // <-- Fixed key here
             credentials: 'include' // Include cookies for session management
         });
 
@@ -143,6 +144,7 @@ async function sendMessage() {
         }
 
         const data = await response.json();
+        sessionId = data.session_id;
 
         // Hide typing indicator
         hideTypingIndicator();

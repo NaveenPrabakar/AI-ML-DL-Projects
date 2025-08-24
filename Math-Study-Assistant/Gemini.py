@@ -1,37 +1,38 @@
-import os, uuid, orjson
+import os, uuid, orjson, json, redis
 from typing import List, Dict, Any, Tuple
 from dataclasses import dataclass
 from pypdf import PdfReader
 from pinecone import Pinecone, ServerlessSpec
 import google.generativeai as genai
-import json
 
 # -----------------------------
 # Config
 # -----------------------------
 GEMINI_API_KEY   = ""
 PINECONE_API_KEY = ""
+REDIS_URL=""
 PINECONE_INDEX   = ""
 
 EMBED_MODEL = "models/embedding-001"
 GEN_MODEL   = "gemini-1.5-flash"
 
-TOP_K = 10            # fetch more chunks
-MIN_SIM = 0.1         # lower threshold for better recall
+TOP_K = 10
+MIN_SIM = 0.1
 CHUNK_TOKENS = 400
 CHUNK_OVERLAP = 49
 DEFAULT_NAMESPACE = "math_textbook"
-
-MAX_CHUNK_TEXT = 2000  # chars per chunk before embedding
-PREVIEW_LEN = 500      # chars stored in metadata
+MAX_CHUNK_TEXT = 2000
+PREVIEW_LEN = 500
+SESSION_TTL = 3600  # 1 hour session memory
 
 genai.configure(api_key=GEMINI_API_KEY)
 pc = Pinecone(api_key=PINECONE_API_KEY)
+rdb = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 
 if PINECONE_INDEX not in pc.list_indexes().names():
     pc.create_index(
         name=PINECONE_INDEX,
-        dimension=768,  # Gemini embeddings are 768-d
+        dimension=768,  
         metric="cosine",
         spec=ServerlessSpec(cloud="aws", region="us-east-1")
     )
@@ -103,12 +104,10 @@ def ingest_pdf_safe(path: str, source: str, namespace: str = DEFAULT_NAMESPACE, 
                     meta={"source": source, "page": p, "year": year, "namespace": namespace}
                 ))
 
-    # embed in batches
     upserts = []
     for i in range(0, len(chunks), 128):
         batch = chunks[i:i+128]
         texts = [c.text for c in batch]
-
         resp = genai.embed_content(model=EMBED_MODEL, content=texts)
         embeddings = []
         if isinstance(resp, dict) and "embedding" in resp:
@@ -116,7 +115,6 @@ def ingest_pdf_safe(path: str, source: str, namespace: str = DEFAULT_NAMESPACE, 
         elif isinstance(resp, list):
             for r in resp:
                 embeddings.append(flatten_embedding(r.get("embedding")))
-
         for c, vec in zip(batch, embeddings):
             if len(vec) != 768:
                 raise ValueError(f"Embedding dimension mismatch: {len(vec)} != 768")
@@ -132,7 +130,7 @@ def ingest_pdf_safe(path: str, source: str, namespace: str = DEFAULT_NAMESPACE, 
     return len(chunks)
 
 # -----------------------------
-# Retrieval + QA
+# Retrieval + QA w/ session memory
 # -----------------------------
 SYSTEM_PROMPT = [
     "You are a helpful **math tutor assistant**.\n"
@@ -145,19 +143,14 @@ SYSTEM_PROMPT = [
     "Reject any irrelevant or harmful requests.\n"
 ]
 DISCLAIMER = "Educational use only. Always double-check solutions."
-
 def retrieve(query: str, vector: str, namespace: str = DEFAULT_NAMESPACE, k: int = TOP_K) -> List[Dict[str, Any]]:
-
     resp = genai.embed_content(
         model=EMBED_MODEL,
         content=query,
         task_type="RETRIEVAL_QUERY",
         output_dimensionality=768
     )
-
     grab = pc.Index(vector)
-
-
     qvec = flatten_embedding(resp["embedding"])
     res = grab.query(vector=qvec, top_k=k, include_metadata=True, namespace=namespace)
     hits = []
@@ -166,56 +159,54 @@ def retrieve(query: str, vector: str, namespace: str = DEFAULT_NAMESPACE, k: int
             hits.append({**(m.metadata or {}), "_score": m.score, "_id": m.id})
     return hits
 
-def build_messages(query: str, i:int, ctx: List[Dict[str, Any]]):
+def build_messages(query: str, i:int, ctx: List[Dict[str, Any]], history: List[Dict[str,str]]):
     ctx_str = "\n---\n".join([f"[{c['source']}, p.{c['page']}]\n{c['text'][:1000]}" for c in ctx])
-    user = f"Q: {query}\n\nContext:\n{ctx_str}\n\nProvide a clear step-by-step solution. Add Disclaimer line."
-    return [{"role": "user", "parts": [SYSTEM_PROMPT[i] + "\n\n" + user]}]
+    user_content = f"Q: {query}\n\nContext:\n{ctx_str}\n\nProvide a clear step-by-step solution. Add Disclaimer line."
 
-def answer_query(query: str, vector: str, i: int, namespace: str = DEFAULT_NAMESPACE):
+    msgs_text = SYSTEM_PROMPT[i] + "\n\n"
+    # prepend previous session messages
+    for h in history:
+        role = h["role"]
+        content = h["content"]
+        msgs_text += f"{role.upper()}: {content}\n"
+
+    msgs_text += f"USER: {user_content}"
+
+    return [{"role": "user", "parts": [msgs_text]}]
+
+def answer_query(query: str, vector: str, i: int, namespace: str = DEFAULT_NAMESPACE, session_id: str = None):
+    session_id = session_id or str(uuid.uuid4())
+    history = json.loads(rdb.get(session_id) or "[]")
+
     ctx = retrieve(query, vector, namespace, TOP_K)
-    msgs = build_messages(query, i, ctx)
+    msgs = build_messages(query, i, ctx, history)
     model = genai.GenerativeModel(GEN_MODEL)
     resp = model.generate_content(msgs)
+
+    answer = resp.text.strip()
+    # update session memory
+    history.append({"role": "user", "content": query})
+    history.append({"role": "assistant", "content": answer})
+    rdb.set(session_id, json.dumps(history), ex=SESSION_TTL)
+
     return {
-        "answer": resp.text.strip(),
+        "session_id": session_id,
+        "answer": answer,
         "citations": [{"source": c["source"], "page": c["page"]} for c in ctx],
         "disclaimer": DISCLAIMER
     }
 
 # -----------------------------
-# Fine-tune dataset builder
+# Lambda handler
 # -----------------------------
-def build_ft_example(question: str, ctx: List[Dict[str, Any]]):
-    cites = ", ".join([f"{c['source']}, p.{c['page']}" for c in ctx[:3]])
-    answer = f"Step-by-step solution: <your curated solution>\n\nCitations: [{cites}]\nDisclaimer: {DISCLAIMER}"
-    return {
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": question},
-            {"role": "assistant", "content": answer}
-        ]
-    }
-
-def write_jsonl(records: List[Dict], path: str):
-    with open(path, "wb") as f:
-        for r in records:
-            f.write(orjson.dumps(r))
-            f.write(b"\n")
-
-
 def handler(event, context):
-    try:
-        body = json.loads(event.get("body", "{}"))
-        choice = body.get("subject", "math")
-        query = body.get("query", "Explain Pythagorean theorem")
-        namespace = body.get("namespace", DEFAULT_NAMESPACE)
+    body = json.loads(event.get("body", "{}"))
+    choice = body.get("subject", "math")
+    query = body.get("query", "Explain Pythagorean theorem")
+    session_id = body.get("session_id")
+    namespace = body.get("namespace", DEFAULT_NAMESPACE)
 
-        if choice == "math":
-            result = answer_query(query, "math-index-gemini", 0, namespace)
-        elif choice == "sql":
-            result = answer_query(query, "sql-index-gemini" , 1, namespace)
-            
-    except json.JSONDecodeError:
-        query = "Explain Pythagorean theorem"
-        namespace = DEFAULT_NAMESPACE
-    return result
+    if choice == "math":
+        return answer_query(query, "math-index-gemini", 0, namespace, session_id)
+    elif choice == "sql":
+        return answer_query(query, "sql-index-gemini", 1, namespace, session_id)
