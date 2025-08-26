@@ -20,7 +20,7 @@ TOP_K = 10
 MIN_SIM = 0.1
 CHUNK_TOKENS = 400
 CHUNK_OVERLAP = 49
-DEFAULT_NAMESPACE = "math_textbook"
+DEFAULT_NAMESPACE = "harrison21"
 MAX_CHUNK_TEXT = 2000
 PREVIEW_LEN = 500
 SESSION_TTL = 3600  # 1 hour session memory
@@ -135,12 +135,16 @@ def ingest_pdf_safe(path: str, source: str, namespace: str = DEFAULT_NAMESPACE, 
 SYSTEM_PROMPT = [
     "You are a helpful **math tutor assistant**.\n"
     "Rules: Answer the question. you may use textbook as reference\n"
-    "Reject any irrelevant or harmful requests.\n",
+    "Reject any irrelevant or harmful requests.\n Do not respond with markdown" ,
 
     "You are a helpful **SQL assistant**.\n"
     "Rules: Use the provided context when applicable, provide correct and optimized SQL queries, and briefly explain your reasoning if needed.\n"
     "If relevant context is missing, inform the user instead of guessing.\n"
-    "Reject any irrelevant or harmful requests.\n"
+    "Reject any irrelevant or harmful requests. Do not respond with markdown\n",
+
+    "You are a helpful **astronomy tutor assistant**. Reject any irrelevant or harmful requests.\n"
+    "Rules: use provided textbook sources (not required), and cite like [Source, p.Page] if textbook is used. Do not respond with markdown\n"
+
 ]
 DISCLAIMER = "Educational use only. Always double-check solutions."
 def retrieve(query: str, vector: str, namespace: str = DEFAULT_NAMESPACE, k: int = TOP_K) -> List[Dict[str, Any]]:
@@ -210,3 +214,5 @@ def handler(event, context):
         return answer_query(query, "math-index-gemini", 0, namespace, session_id)
     elif choice == "sql":
         return answer_query(query, "sql-index-gemini", 1, namespace, session_id)
+    elif choice == 'astro':
+        return answer_query(query, "astronemy-index-gemini", 2, namespace, session_id)

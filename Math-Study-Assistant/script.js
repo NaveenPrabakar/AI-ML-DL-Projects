@@ -14,7 +14,7 @@ const API_BASE_URL = 'https://kp2ar7bpxi.execute-api.us-east-2.amazonaws.com';
 
 
 let isProcessing = false;
-let sessionId = null; 
+let sessionId = null;
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -45,27 +45,52 @@ function setupEventListeners() {
 
     subjectSelect.addEventListener('change', () => {
         const subject = subjectSelect.value;
-        assistantTitle.textContent = subject === 'math' ? "Math Assistant" : "SQL Assistant";
+        assistantTitle.textContent =
+            subject === 'math'
+                ? "Math Assistant"
+                : subject === 'sql'
+                    ? "SQL Assistant"
+                    : subject === 'astro'
+                        ? "Astronomy Assistant"
+                        : "AI Assistant";
+
 
         const icon = document.getElementById('assistantIcon');
         if (subject === 'math') {
             icon.className = 'fas fa-calculator';
-        } else {
+        } else if (subject === 'sql') {
             icon.className = 'fas fa-database';
+        } else if (subject === 'astro') {
+            icon.className = 'fas fa-star';
+        } else {
+            icon.className = 'fas fa-robot'; // Default icon
         }
 
         const message = document.getElementById('messageInput');
-        message.placeholder = subject === 'math' ? "Ask me a math question..." : "Ask me a SQL question...";
+        if (subject === 'math') {
+            message.placeholder = "Ask me a math question...";
+        } else if (subject === 'sql') {
+            message.placeholder = "Ask me a SQL question...";
+        } else if (subject === 'astro') {
+            message.placeholder = "Ask me an astronomy question...";
+        } else {
+            message.placeholder = "Ask me anything...";
+        }
+
 
         // Replace welcome message
         clearChatMessages();
         addMessage(
             subject === 'math'
-                ? "Hello! I'm your AI math assistant. I can help you with:\n- Solving mathematical problems\n- Explaining concepts\n- Step-by-step solutions"
-                : "Hello! I'm your AI SQL assistant. I can help you with:\n- Writing and optimizing SQL queries\n- Explaining database concepts\n- Providing step-by-step query breakdowns"
-            ,
+                ? "Hello! I'm your AI Math Assistant. I can help you with:\n- Solving mathematical problems\n- Explaining concepts\n- Step-by-step solutions"
+                : subject === 'sql'
+                    ? "Hello! I'm your AI SQL Assistant. I can help you with:\n- Writing and optimizing SQL queries\n- Explaining database concepts\n- Providing step-by-step query breakdowns"
+                    : subject === 'astro'
+                        ? "Hello! I'm your AI Astronomy Assistant. I can help you with:\n- Understanding celestial objects and phenomena\n- Explaining space concepts and terminology\n- Guiding you through stargazing and astronomy basics"
+                        : "Hello! I'm your AI Assistant.",
             'assistant'
         );
+
     });
 
 
