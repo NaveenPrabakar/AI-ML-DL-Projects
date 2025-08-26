@@ -131,22 +131,21 @@ def ingest_pdf_safe(path: str, source: str, namespace: str = DEFAULT_NAMESPACE, 
 
 # -----------------------------
 # Retrieval + QA w/ session memory
-# -----------------------------
+
 SYSTEM_PROMPT = [
     "You are a helpful **math tutor assistant**.\n"
-    "Rules: Answer the question. you may use textbook as reference\n"
-    "Reject any irrelevant or harmful requests.\n Do not respond with markdown" ,
+    "Rules: Answer the user's math questions clearly and accurately. You may refer to textbooks as needed. Reject any irrelevant or harmful requests. Do not format responses using markdown.",
 
     "You are a helpful **SQL assistant**.\n"
-    "Rules: Use the provided context when applicable, provide correct and optimized SQL queries, and briefly explain your reasoning if needed.\n"
-    "If relevant context is missing, inform the user instead of guessing.\n"
-    "Reject any irrelevant or harmful requests. Do not respond with markdown\n",
+    "Rules: Use the provided context when available. Write correct, efficient SQL queries and provide brief explanations when necessary. If essential context is missing, inform the user instead of guessing. Reject any irrelevant or harmful requests. Do not format responses using markdown.",
 
-    "You are a helpful **astronomy tutor assistant**. Reject any irrelevant or harmful requests.\n"
-    "Rules: use provided textbook sources (not required), and cite like [Source, p.Page] if textbook is used. Do not respond with markdown\n"
-
+    "You are a helpful **astronomy tutor assistant**.\n"
+    "Rules: Use provided textbook sources when applicable (not required), and cite them as [Source, p.Page] if used. Reject any irrelevant or harmful requests. Do not format responses using markdown."
 ]
+
+
 DISCLAIMER = "Educational use only. Always double-check solutions."
+
 def retrieve(query: str, vector: str, namespace: str = DEFAULT_NAMESPACE, k: int = TOP_K) -> List[Dict[str, Any]]:
     resp = genai.embed_content(
         model=EMBED_MODEL,
@@ -163,20 +162,37 @@ def retrieve(query: str, vector: str, namespace: str = DEFAULT_NAMESPACE, k: int
             hits.append({**(m.metadata or {}), "_score": m.score, "_id": m.id})
     return hits
 
-def build_messages(query: str, i:int, ctx: List[Dict[str, Any]], history: List[Dict[str,str]]):
-    ctx_str = "\n---\n".join([f"[{c['source']}, p.{c['page']}]\n{c['text'][:1000]}" for c in ctx])
-    user_content = f"Q: {query}\n\nContext:\n{ctx_str}\n\nProvide a clear step-by-step solution. Add Disclaimer line."
+def build_messages(query: str, i: int, ctx: List[Dict[str, Any]], history: List[Dict[str, str]]):
+    # Construct the user content with or without context
+    if ctx:
+        ctx_str = "\n---\n".join(
+            [f"[{c['source']}, p.{c['page']}]\n{c['text'][:1000]}" for c in ctx]
+        )
+        user_content = (
+            f"Q: {query}\n\n"
+            f"Context:\n{ctx_str}\n\n"
+            f"Use the context above if relevant, otherwise answer using accurate general knowledge. Answer must be Step by Step\n"
+            f"Add a final line: '{DISCLAIMER}'"
+        )
+    else:
+        user_content = (
+            f"Q: {query}\n\n"
+            f"No textbook context found. Please answer using general astronomy knowledge. Answer Must be Step by Step\n"
+            f"Add a final line: '{DISCLAIMER}'"
+        )
 
+    # Start message text with the appropriate system prompt
     msgs_text = SYSTEM_PROMPT[i] + "\n\n"
-    # prepend previous session messages
-    for h in history:
-        role = h["role"]
-        content = h["content"]
-        msgs_text += f"{role.upper()}: {content}\n"
 
+    # Add previous chat history
+    for h in history:
+        msgs_text += f"{h['role'].upper()}: {h['content']}\n"
+
+    # Append current user question with context
     msgs_text += f"USER: {user_content}"
 
     return [{"role": "user", "parts": [msgs_text]}]
+
 
 def answer_query(query: str, vector: str, i: int, namespace: str = DEFAULT_NAMESPACE, session_id: str = None):
     session_id = session_id or str(uuid.uuid4())
