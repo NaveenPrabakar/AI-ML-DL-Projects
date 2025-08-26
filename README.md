@@ -271,7 +271,6 @@ Real-time hand gesture recognition using Google's Teachable Machine platform.
 | LLM Comparison | Performance Analysis | **ChatGPT Winner** | LM Studio, Local Models |
 | Medical RAG System | Risk Classification | **3-Level System** | OpenAI, Pinecone |
 | Math Assistant Tutor | Educational Accuracy | **Step-by-Step Solutions** | OpenAI/Gemini, Pinecone |
-| Gesture Recognition | Real-time Accuracy | **95%** | Teachable Machine |
 
 ---
 
