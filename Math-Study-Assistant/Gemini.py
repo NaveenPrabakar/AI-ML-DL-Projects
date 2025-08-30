@@ -14,7 +14,7 @@ REDIS_URL=""
 PINECONE_INDEX   = ""
 
 EMBED_MODEL = "models/embedding-001"
-GEN_MODEL   = "gemini-1.5-flash"
+GEN_MODEL   = "gemini-2.0-flash" #best possible free model
 
 TOP_K = 10
 MIN_SIM = 0.1

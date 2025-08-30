@@ -440,3 +440,33 @@ body {
     font-size: 0.9rem;
     cursor: pointer;
 }
+
+
+.upload-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #f093fb;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+  background: #e83e8c;
+}
+
+
+.preview-img {
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 8px;
+  margin-top: 8px;
+  display: block;
+}
+
+

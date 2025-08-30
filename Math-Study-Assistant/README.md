@@ -1,169 +1,279 @@
-# Math Assistant - ChatGPT-like Interface
+# Math Study Assistant
 
-A modern, responsive web interface for your AI math assistant backend. This interface provides a ChatGPT-like experience with real-time chat functionality, session management, and beautiful UI design.
+An intelligent AI-powered study assistant that provides step-by-step solutions and explanations for Math, SQL, and Astronomy questions. Built with FastAPI, Google Gemini AI, and Pinecone vector database for enhanced learning experiences.
 
-## Features
+## 🚀 Features
 
-- 🎨 **Modern UI Design**: Clean, responsive interface with smooth animations
-- 💬 **Real-time Chat**: Instant message sending and receiving
-- 📱 **Mobile Responsive**: Works perfectly on desktop, tablet, and mobile devices
-- ⏱️ **Typing Indicators**: Visual feedback when the AI is processing
-- 🔄 **Session Management**: Maintains conversation context across requests
-- 🧹 **Clear Chat**: Easy way to start fresh conversations
-- ⌨️ **Keyboard Shortcuts**: Enter to send, Shift+Enter for new lines
-- 📊 **Character Counter**: Track message length with visual feedback
-- 🔔 **Notifications**: Success and error notifications
-- 🎯 **Math Formatting**: Support for inline and block math expressions
+- **Multi-Subject Support**: Get help with Math, SQL, and Astronomy
+- **AI-Powered Responses**: Powered by Google Gemini 2.0 Flash for accurate, detailed answers
+- **Step-by-Step Solutions**: Clear, educational explanations with proper methodology
+- **Vector Search**: Intelligent retrieval of relevant textbook content using Pinecone
+- **Session Management**: Maintains conversation context across multiple questions
+- **Modern Web Interface**: Clean, responsive chat interface with real-time interactions
+- **Citation Support**: References to source materials when applicable
+- **Educational Focus**: Designed specifically for learning and understanding
 
-## File Structure
+## 🏗️ Architecture
 
 ```
-TypicalMathAssistant/
-├── math.py              # Your FastAPI backend
-├── math_knowledge.pdf   # Math knowledge base
-├── index.html          # Main HTML interface
-├── styles.css          # CSS styling
-├── script.js           # JavaScript functionality
+Math-Study-Assistant/
+├── main.py              # FastAPI backend server
+├── Gemini.py            # Core AI logic and vector search
+├── index.html           # Web interface
+├── styles.css           # UI styling
+├── script.js            # Frontend functionality
+├── requirements.txt     # Python dependencies
+├── Dockerfile           # Container configuration
 └── README.md           # This file
 ```
 
-## Setup Instructions
+## 🛠️ Technology Stack
 
-### 1. Backend Setup
+- **Backend**: FastAPI (Python)
+- **AI Model**: Google Gemini 2.0 Flash
+- **Vector Database**: Pinecone
+- **Caching**: Redis
+- **Frontend**: HTML5, CSS3, JavaScript
+- **PDF Processing**: PyPDF
+- **Containerization**: Docker
 
-Make sure your FastAPI backend is running:
+## 📋 Prerequisites
+
+Before running this application, you'll need:
+
+- Python 3.8+
+- Google Gemini API key
+- Pinecone API key
+- Redis instance
+- PDF textbooks for knowledge base (optional)
+
+## 🔧 Installation & Setup
+
+### 1. Clone the Repository
 
 ```bash
-# Install dependencies (if not already done)
-pip install fastapi uvicorn redis langchain openai faiss-cpu
-
-# Set environment variables
-export OPENAI_API_KEY="your-openai-api-key"
-export REDIS_URL="your-redis-url"
-
-# Run the backend
-uvicorn math:app --reload --host 0.0.0.0 --port 8000
+git clone <repository-url>
+cd Math-Study-Assistant
 ```
 
-### 2. Frontend Setup
+### 2. Install Dependencies
 
-The frontend files are ready to use. Simply open `index.html` in your web browser, or serve them using a local server:
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Environment Configuration
+
+Create a `.env` file in the project root:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+PINECONE_API_KEY=your_pinecone_api_key_here
+REDIS_URL=your_redis_url_here
+PINECONE_INDEX=your_pinecone_index_name
+```
+
+### 4. Initialize Vector Database
+
+The application will automatically create the Pinecone index if it doesn't exist. You can ingest PDF textbooks using the functions in `Gemini.py`:
+
+```python
+from Gemini import ingest_pdf_safe
+
+# Ingest a math textbook
+ingest_pdf_safe("path/to/math_textbook.pdf", "Mathematics Textbook", "math-namespace")
+
+# Ingest SQL materials
+ingest_pdf_safe("path/to/sql_guide.pdf", "SQL Guide", "sql-namespace")
+
+# Ingest astronomy materials
+ingest_pdf_safe("path/to/astronomy_book.pdf", "Astronomy Textbook", "astro-namespace")
+```
+
+### 5. Run the Application
+
+#### Option A: Direct Python Execution
+
+```bash
+# Start the FastAPI server
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### Option B: Docker Deployment
+
+```bash
+# Build the Docker image
+docker build -t math-study-assistant .
+
+# Run the container
+docker run -p 8000:8000 --env-file .env math-study-assistant
+```
+
+### 6. Access the Web Interface
+
+Open `index.html` in your web browser or serve it using a local server:
 
 ```bash
 # Using Python's built-in server
 python -m http.server 8080
 
-# Using Node.js (if you have it installed)
-npx serve .
-
-# Using PHP (if you have it installed)
-php -S localhost:8080
+# Then navigate to http://localhost:8080
 ```
 
-### 3. Configuration
+## 🎯 Usage
 
-Update the API URL in `script.js` if your backend is running on a different port:
+### Web Interface
 
-```javascript
-const API_BASE_URL = 'http://localhost:8000'; // Change this if needed
+1. **Select Subject**: Choose between Math, SQL, or Astronomy from the dropdown
+2. **Ask Questions**: Type your question in the chat input
+3. **Get Answers**: Receive step-by-step explanations with citations
+4. **Clear Chat**: Start fresh conversations using the "Clear Chat" button
+
+### API Endpoints
+
+The application exposes the following REST API endpoints:
+
+#### POST `/answer`
+Submit a question and receive an AI-generated answer.
+
+**Request Body:**
+```json
+{
+  "question": "Explain the Pythagorean theorem",
+  "namespace": "math-namespace"
+}
 ```
 
-## Usage
+**Response:**
+```json
+{
+  "session_id": "uuid-string",
+  "answer": "Step-by-step explanation...",
+  "citations": [
+    {
+      "source": "Mathematics Textbook",
+      "page": 45
+    }
+  ],
+  "disclaimer": "Educational use only. Always double-check solutions."
+}
+```
 
-1. **Open the Interface**: Navigate to `index.html` in your browser
-2. **Start Chatting**: Type your math question in the input field
-3. **Send Messages**: Press Enter or click the send button
-4. **Clear Chat**: Use the "Clear Chat" button to start fresh
-5. **View History**: Scroll through your conversation history
+## 🔍 How It Works
 
-## API Endpoints
+### 1. Question Processing
+- User submits a question through the web interface
+- The question is embedded using Google's embedding model
+- Vector similarity search is performed against the knowledge base
 
-The interface communicates with your FastAPI backend using these endpoints:
+### 2. Context Retrieval
+- Relevant textbook passages are retrieved from Pinecone
+- Context is ranked by similarity score
+- Top-k most relevant passages are selected
 
-- `POST /ask` - Send a question and get an answer
-- `POST /clear_session` - Clear the current session
+### 3. AI Generation
+- Context and question are formatted for Gemini AI
+- System prompts ensure educational, step-by-step responses
+- Previous conversation history is maintained for context
 
-## Features in Detail
+### 4. Response Delivery
+- Generated answer is returned with citations
+- Session is updated in Redis for future context
+- Response is displayed in the web interface
 
-### Message Formatting
+## 🎨 Customization
 
-The interface supports various formatting options:
+### Adding New Subjects
 
-- **Line Breaks**: Automatically converted to `<br>` tags
-- **Code Blocks**: Text between backticks (`code`) is formatted as inline code
-- **Math Expressions**: 
-  - Inline math: `$x^2 + y^2 = z^2$`
-  - Block math: `$$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$`
-
-### Responsive Design
-
-The interface adapts to different screen sizes:
-
-- **Desktop**: Full-width layout with optimal spacing
-- **Tablet**: Adjusted padding and font sizes
-- **Mobile**: Compact layout with touch-friendly buttons
-
-### Session Management
-
-- Each browser session maintains conversation context
-- Sessions are stored in Redis with a 10-minute TTL
-- Clear chat functionality resets both frontend and backend state
-
-### Error Handling
-
-- Network errors are displayed as user-friendly messages
-- Loading states prevent multiple simultaneous requests
-- Graceful degradation when backend is unavailable
-
-## Customization
+1. Update the subject selector in `index.html`
+2. Add new system prompts in `Gemini.py`
+3. Create corresponding Pinecone namespaces
+4. Update the handler function to route to new subjects
 
 ### Styling
 
-You can customize the appearance by modifying `styles.css`:
+Modify `styles.css` to customize the appearance:
+- Color scheme and themes
+- Layout and spacing
+- Typography and fonts
+- Responsive design breakpoints
 
-- **Colors**: Update CSS variables for theme colors
-- **Fonts**: Change the font family in the body selector
-- **Layout**: Adjust spacing and sizing in the container classes
+### AI Behavior
 
-### Functionality
+Adjust the system prompts in `Gemini.py` to modify:
+- Response style and format
+- Educational approach
+- Citation requirements
+- Safety and content filtering
 
-Modify `script.js` to add new features:
+## 🔒 Security & Privacy
 
-- **Message Formatting**: Extend the `formatMessageContent` function
-- **API Integration**: Add new endpoints or modify request handling
-- **UI Interactions**: Add new event listeners or UI components
+- API keys are stored in environment variables
+- No sensitive data is logged or stored permanently
+- Session data expires after 1 hour
+- Educational use disclaimer is included in all responses
 
-## Browser Compatibility
-
-The interface works on all modern browsers:
-
-- ✅ Chrome 80+
-- ✅ Firefox 75+
-- ✅ Safari 13+
-- ✅ Edge 80+
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **CORS Errors**: Make sure your FastAPI backend has CORS enabled
-2. **Connection Refused**: Verify the backend is running on the correct port
-3. **Session Issues**: Check that Redis is properly configured and running
+1. **API Key Errors**
+   - Verify your Gemini and Pinecone API keys are correct
+   - Ensure API keys have proper permissions
+
+2. **Redis Connection Issues**
+   - Check Redis URL format and connectivity
+   - Verify Redis instance is running
+
+3. **Vector Search Problems**
+   - Ensure Pinecone index exists and is properly configured
+   - Check namespace names match your ingested data
+
+4. **CORS Errors**
+   - Update CORS origins in `main.py` to match your frontend URL
+   - Ensure proper CORS middleware configuration
 
 ### Debug Mode
 
-Open the browser's developer console (F12) to see detailed error messages and API responses.
+Enable debug logging by setting the log level in your FastAPI configuration:
 
-## Contributing
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
 
-Feel free to enhance the interface by:
+## 📚 Educational Use
 
-- Adding new UI components
-- Improving accessibility
-- Adding more formatting options
-- Optimizing performance
-- Adding unit tests
+This application is designed for educational purposes:
 
-## License
+- **Students**: Get help understanding complex concepts
+- **Teachers**: Use as a supplementary teaching tool
+- **Self-Learners**: Practice and verify understanding
+- **Researchers**: Explore AI-assisted learning methodologies
 
-This interface is provided as-is for use with your math assistant backend. 
+**Important**: Always verify solutions independently. The AI provides guidance but should not replace critical thinking and verification.
+
+## 🤝 Contributing
+
+We welcome contributions! Please consider:
+
+- Adding new subjects or knowledge domains
+- Improving the AI response quality
+- Enhancing the user interface
+- Adding new features like progress tracking
+- Optimizing performance and scalability
+
+## 📄 License
+
+This project is provided for educational use. Please respect the terms of service for all integrated APIs (Google Gemini, Pinecone, etc.).
+
+## 🙏 Acknowledgments
+
+- Google Gemini AI for powerful language model capabilities
+- Pinecone for vector database infrastructure
+- FastAPI for robust web framework
+- The open-source community for various supporting libraries
+
+---
+
+**Happy Learning! 🎓** 

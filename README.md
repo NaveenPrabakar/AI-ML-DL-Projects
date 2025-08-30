@@ -1,288 +1,250 @@
-# Machine Learning & AI Portfolio
+# 🤖 AI & Machine Learning Portfolio
 
-A comprehensive collection of machine learning, artificial intelligence, and data science projects showcasing various techniques, tools, and applications across different domains.
+> **Naveen Prabakar** | Data Science & AI Minor | AI-201 Course Portfolio
 
-## 🚀 Portfolio Overview
+A comprehensive collection of machine learning, artificial intelligence, and data science projects demonstrating expertise across computer vision, natural language processing, predictive modeling, and intelligent system development.
 
-This portfolio demonstrates expertise in multiple areas of machine learning and AI, from traditional statistical methods to deep learning and low-code solutions. Projects span across computer vision, natural language processing, predictive modeling, and intelligent system development.
+## 🏆 Key Achievements
 
-### 🎯 Key Achievements
-- **🥉 3rd Place** in Housing Price Prediction Competition (Kaggle Score: 0.19)
-- **96% Accuracy** achieved in Vegetable Image Classification using CNNs
-- **84% Accuracy** in Titanic Survival Prediction with advanced feature engineering
-- **Comprehensive AI Documentation** covering 21+ topics with practical implementations
-
----
-
-## 📊 Projects Overview
-
-### 1. 🌿 Vegetable Image Classification
-**Deep Learning | Computer Vision | TensorFlow**
-
-A CNN-based image classifier identifying 7 different vegetables with 96% accuracy across 1,400 test images.
-
-**Key Features:**
-- **Architecture**: Sequential CNN with Conv2D, MaxPooling, and Dense layers
-- **Dataset**: 7,000 training + 1,400 test images (200 per vegetable)
-- **Techniques**: Data augmentation, batch normalization, kernel regularization
-- **Performance**: 96.94% training, 96.93% validation accuracy
-
-**Technologies:** TensorFlow, Keras, NumPy, Pandas, ImageDataGenerator
-
-**Challenges Solved:**
-- Overfitting through early stopping and regularization
-- Similar vegetable appearance (especially brinjal classification)
-- Model stability through parameter tuning
+- **🥉 3rd Place** - Housing Price Prediction Competition (Kaggle Score: 0.19)
+- **96% Accuracy** - Vegetable Image Classification using CNNs
+- **84% Accuracy** - Titanic Survival Prediction with advanced feature engineering
+- **21+ AI Topics** - Comprehensive documentation with practical implementations
 
 ---
 
-### 2. 🚢 Titanic Survival Prediction
-**Machine Learning | Feature Engineering | Classification**
+## 📁 Project Directory
 
-Predicting passenger survival using advanced feature engineering and multiple ML algorithms.
-
-**Key Features:**
-- **Best Model**: XGBoost Classifier with 84% accuracy
-- **Feature Engineering**: FamilySize, IsAlone, Age groups, Title extraction
-- **Advanced Techniques**: SHAP for explainable AI, 5-fold cross-validation
-- **Data Processing**: Comprehensive missing value handling and categorical encoding
-
-**Technologies:** XGBoost, scikit-learn, SHAP, Pandas, Matplotlib, Seaborn
-
-**Innovation:**
-- Created interaction features (Age*Pclass) for better predictions
-- Used SHAP for interpretable feature importance analysis
-- Systematic comparison of multiple algorithms
+| Project | Technology | Domain | Status |
+|---------|------------|--------|--------|
+| [🌿 Vegetable Classification](Image-Classification-CNN/) | TensorFlow/CNN | Computer Vision | ✅ Complete |
+| [🚢 Titanic Survival Prediction](Kaggle_Titanic_Prediction/) | XGBoost/SHAP | Classification | ✅ Complete |
+| [🏠 Housing Price Prediction](Kaggle_House_Prediction/) | KNIME/Regression | Predictive Modeling | 🥉 Winner |
+| [⚙️ KNIME ML Pipeline](Knime_Titanic_Project/) | KNIME Platform | Workflow Automation | ✅ Complete |
+| [🤖 Local LLM Comparison](LM-Studio/) | LM Studio | LLM Evaluation | ✅ Complete |
+| [🌏 Chennai Travel Guide](Perplexity-Collection-Lab/) | Perplexity AI | Content Intelligence | ✅ Complete |
+| [📚 AI Topics Documentation](Perplexity-Lab2/) | Technical Writing | AI Education | ✅ Complete |
+| [🏥 Medical Study Assistant](Simple-Medical-Study-Assistant/) | OpenAI/Pinecone | Healthcare RAG | ✅ Complete |
+| [📐 Math Assistant](Math-Study-Assistant/) | OpenAI/Gemini | Educational AI | ✅ Complete |
+| [👍 Gesture Recognition](Teachable-Machine-Project/) | Teachable Machine | Computer Vision | ✅ Complete |
 
 ---
 
-### 3. 🏠 Housing Price Prediction 🥉
-**KNIME | Regression | Competition Winner**
+## 🚀 Featured Projects
 
-**🎉 3rd Place Winner** in class competition with comprehensive KNIME workflow achieving Kaggle score of 0.19.
+### 🌿 Vegetable Image Classification
+**Deep Learning | Computer Vision | 96% Accuracy**
 
-**Key Features:**
-- **Best Model**: Linear Regression (surprisingly outperformed complex models)
-- **Team Collaboration**: Naveen, Greg, Riza working in specialized roles
-- **Advanced EDA**: Temporal, spatial, and correlation analysis
-- **Feature Engineering**: HouseAge, YearsSinceRemodel, Living Area Ratio
+Advanced CNN-based image classifier identifying 7 different vegetables with exceptional accuracy.
 
-**Technologies:** KNIME Analytics Platform, Multiple ML algorithms, Statistical analysis
+```python
+# Key Technologies
+- TensorFlow & Keras
+- Convolutional Neural Networks
+- Data Augmentation
+- Batch Normalization
+```
 
-**Competition Success Factors:**
-- Systematic data preprocessing and feature scaling
-- Comprehensive model comparison (Linear, Random Forest, Gradient Boosting)
-- Strategic hyperparameter optimization
-- Clear team division and collaboration
-
----
-
-### 4. ⚙️ KNIME Machine Learning Pipeline
-**Visual Programming | Workflow Automation | Model Comparison**
-
-End-to-end ML pipeline using KNIME's visual programming interface with automated model comparison.
-
-**Key Features:**
-- **Models**: Logistic Regression, KNN, Random Forest, SVM
-- **Best Performer**: Random Forest identified through systematic evaluation
-- **Automation**: Complete workflow from data ingestion to prediction export
-- **Evaluation**: Comprehensive scoring and model comparison framework
-
-**Technologies:** KNIME Analytics Platform, Visual workflow design, Multiple ML algorithms
-
-**Workflow Benefits:**
-- No-code solution accessible to non-programmers
-- Reproducible and scalable architecture
-- Easy parameter modification and experimentation
+**📊 Results:** 96.94% training accuracy, 96.93% validation accuracy  
+**📁 [View Project](Image-Classification-CNN/)**
 
 ---
 
-### 5. 🤖 Local LLM vs ChatGPT Comparison
-**LLM Evaluation | Performance Analysis | LM Studio**
+### 🏠 Housing Price Prediction 🥉
+**KNIME | Regression | 3rd Place Winner**
 
-Comprehensive comparison of local Large Language Models against ChatGPT using HR dataset analysis.
+Competition-winning solution using KNIME analytics platform with comprehensive feature engineering.
 
-**Key Features:**
-- **Models Tested**: Mistral-Nemo, Gemma-2.2b, Llama-3.2B vs ChatGPT
-- **Evaluation Metrics**: Clarity, Accuracy, Speed, Overall performance
-- **Dataset**: 311 employee HR records with comprehensive analysis tasks
-- **Winner**: ChatGPT for overall performance, Mistral-Nemo for detailed analysis
+```python
+# Key Features
+- Linear Regression (best performer)
+- Advanced EDA & Feature Engineering
+- Team collaboration approach
+- Kaggle score: 0.19
+```
 
-**Technologies:** LM Studio, Local model deployment, Comparative analysis
-
-**Key Insights:**
-- Local models offer privacy and control at the cost of performance
-- Resource requirements vs capability trade-offs
-- Specialized use cases for different model types
+**🏆 Achievement:** 3rd Place in class competition  
+**📁 [View Project](Kaggle_House_Prediction/)**
 
 ---
 
-### 6. 🌏 Chennai Travel Guide - Perplexity Collection
-**AI-Powered Content | Travel Intelligence | Information Systems**
+### 🏥 Medical Study Assistant
+**RAG System | Healthcare AI | OpenAI + Pinecone**
 
-Intelligent travel guide using Perplexity's AI collection system for comprehensive Chennai travel information.
+Intelligent document processing system with risk classification and educational safeguards.
 
-**Key Features:**
-- **Comprehensive Coverage**: Weather, attractions, culture, transportation
-- **Interactive Queries**: AI-powered responses to specific travel questions
-- **Local Insights**: Authentic information from local sources
-- **Practical Focus**: Actionable travel advice and recommendations
+```python
+# Key Features
+- PDF ingestion with smart chunking
+- Risk classification (LOW/MED/HIGH)
+- Source citation system
+- Educational use only
+```
 
-**Technologies:** Perplexity AI, Document curation, Knowledge management
-
-**Content Categories:**
-- Weather & climate patterns
-- Cultural landmarks and heritage sites
-- Transportation and accommodation
-- Food, shopping, and entertainment
+**🔒 Safety:** Built-in medical disclaimers and risk assessment  
+**📁 [View Project](Simple-Medical-Study-Assistant/)**
 
 ---
 
-### 7. 📚 Applied AI Topics Documentation
-**Technical Writing | AI Education | Comprehensive Reference**
+### 📐 Math Assistant - Educational RAG Tutor
+**Dual AI Support | Mathematical Reasoning | Step-by-Step Solutions**
 
-Extensive documentation covering 21+ AI topics with practical implementations and code examples.
+Advanced math tutoring system supporting both OpenAI and Google Gemini models.
 
-**Key Features:**
-- **Core AI Topics**: NLP, Computer Vision, Reinforcement Learning, Healthcare AI
-- **Industry Applications**: Finance, Education, Agriculture, Autonomous Vehicles
-- **Low-Code AI**: Accessible AI development workflows and platforms
-- **Code Examples**: Python implementations for every major concept
+```python
+# Key Features
+- Dual AI model support (OpenAI/Gemini)
+- Smart textbook processing
+- Step-by-step mathematical solutions
+- Source citations with page numbers
+```
 
-**Technologies:** Comprehensive AI stack, Multiple platforms, Educational frameworks
-
-**Documentation Scope:**
-- 16 major AI technologies with real-world applications
-- 5 low-code AI workflows covering complete ML pipeline
-- Industry-specific implementations and use cases
-- Business benefits and challenge mitigation strategies
+**🎓 Educational Focus:** Designed for mathematical learning and tutoring  
+**📁 [View Project](Math-Study-Assistant/)**
 
 ---
 
-### 8. 🏥 Medical Study Assistant - RAG System
-**Retrieval-Augmented Generation | Healthcare AI | Vector Databases**
+## 🛠️ Technical Skills
 
-Advanced RAG system for educational healthcare reference using OpenAI embeddings and Pinecone vector database.
-
-**Key Features:**
-- **Intelligent Document Processing**: PDF ingestion with smart text chunking
-- **Risk Classification**: Automatic query risk assessment (LOW/MED/HIGH)
-- **Source Citation**: Transparent sourcing with page numbers
-- **Educational Safeguards**: Built-in disclaimers and medical advice restrictions
-
-**Technologies:** OpenAI GPT-4o, Pinecone Vector DB, RAG Architecture, Text Embeddings
-
-**Safety & Ethics:**
-- Educational use only with explicit disclaimers
-- Risk-appropriate response handling
-- No clinical decision-making capabilities
-- Comprehensive citation system
-
----
-
-### 9. 📐 Math Assistant - Educational RAG Tutor
-**Retrieval-Augmented Generation | Educational AI | Mathematical Reasoning**
-
-Intelligent math tutor combining PDF textbook ingestion, vector search, and AI-powered question answering with step-by-step solutions.
-
-**Key Features:**
-- **Dual AI Support**: Compatible with OpenAI GPT and Google Gemini models
-- **Smart Textbook Processing**: Optimized chunking strategy preserving mathematical context
-- **Step-by-Step Solutions**: Detailed explanations with proper mathematical reasoning
-- **Source Citations**: Transparent referencing with textbook page numbers
-- **Educational Focus**: Designed specifically for mathematical learning and tutoring
-
-**Technologies:** OpenAI/Gemini, Pinecone Vector DB, pypdf, Mathematical content processing
-
-**Technical Innovation:**
-- Overlapping text chunks (400 tokens, 49 overlap) for context preservation
-- Dual embedding support (1536D OpenAI, 768D Gemini)
-- Educational prompt engineering with citation requirements
-- Mathematical notation handling in plain text format
-
-**Use Cases:**
-- Statistics problem solving with descriptive analytics
-- Z-score calculations and interpretation
-- Mathematical concept explanation with textbook references
-- Student homework assistance with proper attribution
-
----
-
-### 10. 👍 Thumbs Up/Down Detection
-**Computer Vision | Gesture Recognition | Teachable Machine**
-
-Real-time hand gesture recognition using Google's Teachable Machine platform.
-
-**Key Features:**
-- **Real-time Detection**: 30fps gesture recognition
-- **High Accuracy**: ~95% on test gestures
-- **Lightweight**: <5MB model for fast deployment
-- **Easy Training**: No-code model development
-
-**Technologies:** Google Teachable Machine, Computer vision, Real-time processing
-
-**Application Areas:**
-- User interface control
-- Feedback systems
-- Interactive applications
-
----
-
-## 🛠️ Technical Skills Demonstrated
-
-### Programming Languages
-- **Python**: Primary language for ML/AI development
-- **SQL**: Data querying and analysis
+### Programming & Languages
+- **Python** - Primary ML/AI development
+- **SQL** - Data querying and analysis
+- **Jupyter Notebooks** - Interactive development
 
 ### Machine Learning & AI
-- **Deep Learning**: TensorFlow, Keras, CNNs
-- **Traditional ML**: scikit-learn, XGBoost, Random Forest
-- **RAG**: OpenAI embeddings, Pinecone vector DB
+- **Deep Learning** - TensorFlow, Keras, CNNs
+- **Traditional ML** - scikit-learn, XGBoost, Random Forest
+- **RAG Systems** - OpenAI embeddings, Pinecone vector DB
+- **LLM Evaluation** - Local model deployment, performance analysis
 
 ### Data Science Tools
-- **Analysis**: Pandas, NumPy, SciPy
-- **Visualization**: Matplotlib, Seaborn, Plotly
-- **Feature Engineering**: SHAP, feature selection
-- **Model Evaluation**: Cross-validation, metrics analysis
+- **Analysis** - Pandas, NumPy, SciPy
+- **Visualization** - Matplotlib, Seaborn, Plotly
+- **Feature Engineering** - SHAP, advanced feature selection
+- **Model Evaluation** - Cross-validation, comprehensive metrics
 
 ### Platforms & Frameworks
-- **KNIME**: Visual workflow development
-- **Kaggle**: Competition participation and datasets
-- **Google Colab**: Cloud-based development
-- **LM Studio**: Local LLM deployment
-- **Perplexity**: AI-powered content systems
-
-### Development Practices
-- **Version Control**: Git, collaborative development
-- **Documentation**: Comprehensive technical writing
-- **Testing**: Model validation, performance evaluation
-- **Deployment**: Model productionization strategies
+- **KNIME** - Visual workflow development
+- **Kaggle** - Competition participation
+- **Google Colab** - Cloud-based development
+- **LM Studio** - Local LLM deployment
+- **Perplexity** - AI-powered content systems
+- **Teachable Machine** - No-code computer vision
 
 ---
 
-## 📈 Key Results & Metrics
+## 📈 Performance Metrics
 
-| Project | Primary Metric | Achievement | Technology Stack |
-|---------|---------------|-------------|------------------|
-| Vegetable Classification | Accuracy | **96%** | TensorFlow, CNN |
-| Titanic Survival | Cross-Val Accuracy | **84%** | XGBoost, SHAP |
-| Housing Prediction | Kaggle Score | **0.19** 🥉 | KNIME, Linear Regression |
-| KNIME Pipeline | Model Comparison | **Random Forest Best** | KNIME, Multiple ML |
-| LLM Comparison | Performance Analysis | **ChatGPT Winner** | LM Studio, Local Models |
-| Medical RAG System | Risk Classification | **3-Level System** | OpenAI, Pinecone |
-| Math Assistant Tutor | Educational Accuracy | **Step-by-Step Solutions** | OpenAI/Gemini, Pinecone |
+| Project | Metric | Achievement | Technology |
+|---------|--------|-------------|------------|
+| Vegetable Classification | Accuracy | **96%** | TensorFlow CNN |
+| Titanic Survival | Cross-Val Accuracy | **84%** | XGBoost + SHAP |
+| Housing Prediction | Kaggle Score | **0.19** 🥉 | KNIME + Linear Regression |
 | Gesture Recognition | Real-time Accuracy | **95%** | Teachable Machine |
+| Medical RAG | Risk Classification | **3-Level System** | OpenAI + Pinecone |
+| Math Assistant | Educational Accuracy | **Step-by-Step Solutions** | OpenAI/Gemini + Pinecone |
 
 ---
 
-## 📝 Portfolio Statistics
+## 🎯 Project Categories
 
-- **Total Projects**: 10 comprehensive ML/AI projects
-- **Technologies Used**: 20+ different tools and platforms
+### 🧠 Machine Learning
+- **Classification**: Titanic survival prediction, vegetable classification
+- **Regression**: Housing price prediction, advanced feature engineering
+- **Model Comparison**: Systematic evaluation across multiple algorithms
+
+### 👁️ Computer Vision
+- **Image Classification**: CNN-based vegetable recognition
+- **Gesture Recognition**: Real-time hand gesture detection
+- **Data Augmentation**: Advanced preprocessing techniques
+
+### 🤖 Artificial Intelligence
+- **RAG Systems**: Medical and mathematical assistants
+- **LLM Evaluation**: Local vs cloud model comparison
+- **Content Intelligence**: AI-powered travel guides
+
+### 🔧 Low-Code Solutions
+- **KNIME Workflows**: Visual programming for ML pipelines
+- **Teachable Machine**: No-code computer vision development
+- **Perplexity Collections**: AI-powered content management
+
+---
+
+## 📚 Documentation & Learning
+
+### Comprehensive AI Topics
+- **21+ AI Technologies** with practical implementations
+- **Industry Applications** across healthcare, finance, education
+- **Low-Code AI Workflows** for accessible development
+- **Code Examples** for every major concept
+
+### Educational Focus
+- **Step-by-step tutorials** for complex concepts
+- **Real-world applications** with business benefits
+- **Best practices** and challenge mitigation strategies
+- **Performance optimization** techniques
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+```bash
+# Python environment
+python 3.8+
+pip install -r requirements.txt
+
+# Additional tools
+- KNIME Analytics Platform
+- LM Studio (for local LLMs)
+- Google Colab account
+```
+
+### Quick Start
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd AI201
+   ```
+
+2. **Explore projects by category**
+   - Computer Vision: `Image-Classification-CNN/`, `Teachable-Machine-Project/`
+   - Machine Learning: `Kaggle_Titanic_Prediction/`, `Kaggle_House_Prediction/`
+   - AI Systems: `Math-Study-Assistant/`, `Simple-Medical-Study-Assistant/`
+
+3. **Run Jupyter notebooks**
+   ```bash
+   jupyter notebook
+   ```
+
+---
+
+## 📊 Portfolio Statistics
+
+- **Total Projects**: 10 comprehensive ML/AI implementations
+- **Technologies**: 20+ different tools and platforms
 - **Code Examples**: 100+ practical implementations
-- **Documentation Pages**: 200+ pages of technical content
-- **Competition Achievements**: 1 podium finish (3rd place)
+- **Documentation**: 200+ pages of technical content
+- **Competition Results**: 1 podium finish (3rd place)
 - **Accuracy Records**: Up to 96% in image classification
-- **Industries Covered**: Healthcare, Finance, Travel, Agriculture, Education
+- **Industries**: Healthcare, Finance, Travel, Agriculture, Education
 
-This portfolio represents a journey through the diverse landscape of modern machine learning and artificial intelligence, demonstrating both technical depth and practical application across multiple domains and use cases.
+---
+
+## 🤝 Contact & Collaboration
+
+**Naveen Prabakar**  
+- **Course**: AI-201 (Data Science & AI Minor)
+- **Focus**: Machine Learning, Computer Vision, AI Systems
+- **Achievements**: Competition winner, high-accuracy models, comprehensive documentation
+
+---
+
+## 📄 License
+
+This portfolio is created for educational purposes as part of the AI-201 course in the Data Science & AI Minor program.
+
+---
+
+*Last updated: December 2024*  
+*Total projects: 10 | Technologies: 20+ | Documentation: 200+ pages*
