@@ -1,19 +1,15 @@
-# Use an official Python image as the base
-FROM python:3.8-sli
-
+FROM public.ecr.aws/lambda/python:3.10
 
 WORKDIR /app
 
 
-COPY model.py /app/
-
-
-RUN apt-get update && apt-get install -y \
-    libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
-
-
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir transformers boto3
+    && pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "model.py"]
+
+COPY model.py ${LAMBDA_TASK_ROOT}
+COPY SentimentModel/ ${LAMBDA_TASK_ROOT}/SentimentModel/
+
+# Lambda handler entry point
+CMD ["model.lambda_handler"]

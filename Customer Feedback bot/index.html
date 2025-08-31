@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Feedback Sentiment Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <h1>Feedback Sentiment Analyzer</h1>
+            </div>
+            <p class="subtitle">Analyze customer feedback sentiment with AI</p>
+        </header>
+
+        <main class="main-content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="feedback-text">Enter Customer Feedback:</label>
+                    <textarea 
+                        id="feedback-text" 
+                        placeholder="Paste your customer feedback here... (e.g., 'The product exceeded my expectations and the customer service was excellent!')"
+                        rows="4"
+                    ></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button id="analyze-btn" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                        Analyze Sentiment
+                    </button>
+                    <button id="clear-btn" class="btn btn-secondary">
+                        <i class="fas fa-trash"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-section" id="results-section" style="display: none;">
+                <h2>Analysis Results</h2>
+                <div class="result-card" id="result-card">
+                    <div class="sentiment-indicator">
+                        <div class="sentiment-icon" id="sentiment-icon">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <div class="sentiment-text">
+                            <h3 id="sentiment-label">Positive</h3>
+                            <p id="sentiment-description">The feedback expresses positive sentiment</p>
+                        </div>
+                    </div>
+                    
+                    <div class="confidence-meter">
+                        <div class="confidence-label">
+                            <span>Confidence Level</span>
+                            <span id="confidence-percentage">85%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidence-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="feedback-preview">
+                        <h4>Analyzed Text:</h4>
+                        <p id="analyzed-text">Sample feedback text...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading-section" id="loading-section" style="display: none;">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <p>Analyzing sentiment...</p>
+            </div>
+
+            <div class="error-section" id="error-section" style="display: none;">
+                <div class="error-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Error</h3>
+                    <p id="error-message">Something went wrong. Please try again.</p>
+                </div>
+            </div>
+        </main>
+
+        <div class="examples-section">
+            <h3>Try these examples:</h3>
+            <div class="example-buttons">
+                <button class="example-btn" data-text="The product exceeded my expectations and the customer service was excellent!">
+                    <i class="fas fa-thumbs-up"></i>
+                    Positive Feedback
+                </button>
+                <button class="example-btn" data-text="I'm very disappointed with the quality and the delivery was late.">
+                    <i class="fas fa-thumbs-down"></i>
+                    Negative Feedback
+                </button>
+                <button class="example-btn" data-text="The product is okay, nothing special but it works as expected.">
+                    <i class="fas fa-minus"></i>
+                    Neutral Feedback
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
