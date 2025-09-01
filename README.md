@@ -1,6 +1,6 @@
 # 🤖 AI & Machine Learning Portfolio
 
-> **Naveen Prabakar** | Data Science & AI Minor | AI-201 Course Portfolio
+> **Naveen Prabakar** | Data Science & AI Minor | AI/ML/DL Portfolio
 
 A comprehensive collection of machine learning, artificial intelligence, and data science projects demonstrating expertise across computer vision, natural language processing, predictive modeling, and intelligent system development.
 
@@ -135,7 +135,6 @@ Advanced math tutoring system supporting both OpenAI and Google Gemini models.
 
 ## 📈 Performance Metrics
 
-<<<<<<< HEAD
 | Project | Metric | Achievement | Technology |
 |---------|--------|-------------|------------|
 | Vegetable Classification | Accuracy | **96%** | TensorFlow CNN |
@@ -154,7 +153,6 @@ Advanced math tutoring system supporting both OpenAI and Google Gemini models.
 | LLM Comparison | Performance Analysis | **ChatGPT Winner** | LM Studio, Local Models |
 | Medical RAG System | Risk Classification | **3-Level System** | OpenAI, Pinecone |
 | Math Assistant Tutor | Educational Accuracy | **Step-by-Step Solutions** | OpenAI/Gemini, Pinecone |
->>>>>>> e3580aff1b5fc4a6e52fda010a41865bec55e100
 
 ---
 
@@ -241,7 +239,6 @@ pip install -r requirements.txt
 - **Accuracy Records**: Up to 96% in image classification
 - **Industries**: Healthcare, Finance, Travel, Agriculture, Education
 
-<<<<<<< HEAD
 ---
 
 ## 🤝 Contact & Collaboration
@@ -263,4 +260,3 @@ This portfolio is created for educational purposes as part of the AI-201 course 
 *Total projects: 10 | Technologies: 20+ | Documentation: 200+ pages*
 =======
 This portfolio represents a journey through the diverse landscape of modern machine learning and artificial intelligence, demonstrating both technical depth and practical application across multiple domains and use cases.
->>>>>>> e3580aff1b5fc4a6e52fda010a41865bec55e100
