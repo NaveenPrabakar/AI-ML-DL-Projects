@@ -1,7 +1,7 @@
-pypdf 
-pinecone 
-tiktoken 
-orjson 
-python-dotenv 
-google.generativeai
+openai
+pinecone
 redis
+pytesseract
+Pillow
+numpy==1.26.4
+

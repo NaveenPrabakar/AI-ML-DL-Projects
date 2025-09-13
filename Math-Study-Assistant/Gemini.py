@@ -1,210 +1,149 @@
-import os, uuid, orjson, json, redis
-from typing import List, Dict, Any, Tuple
-from dataclasses import dataclass
-from pypdf import PdfReader
+import os, uuid, json, redis
+from typing import List, Dict, Any
+import fitz  # PyMuPDF
+import pytesseract
+from PIL import Image
+import numpy as np
 from pinecone import Pinecone, ServerlessSpec
-import google.generativeai as genai
+from openai import OpenAI
 
 # -----------------------------
 # Config
 # -----------------------------
-GEMINI_API_KEY   = ""
+OPENAI_API_KEY   = ""
 PINECONE_API_KEY = ""
-REDIS_URL=""
-PINECONE_INDEX   = ""
+REDIS_URL        = ""
+INDEX_NAME       = "math"
 
-EMBED_MODEL = "models/embedding-001"
-GEN_MODEL   = "gemini-2.0-flash" #best possible free model
+DEFAULT_NAMESPACE = "math"
+EMBED_MODEL       = "text-embedding-3-small"
+GEN_MODEL         = "gpt-5-nano"
+TOP_K             = 5
+MIN_SIM           = 0.1
+SESSION_TTL       = 3600  # 1 hour session memory
+PREVIEW_LEN       = 500
 
-TOP_K = 10
-MIN_SIM = 0.1
-CHUNK_TOKENS = 400
-CHUNK_OVERLAP = 49
-DEFAULT_NAMESPACE = "harrison21"
-MAX_CHUNK_TEXT = 2000
-PREVIEW_LEN = 500
-SESSION_TTL = 3600  # 1 hour session memory
-
-genai.configure(api_key=GEMINI_API_KEY)
-pc = Pinecone(api_key=PINECONE_API_KEY)
+# -----------------------------
+# Clients
+# -----------------------------
+client = OpenAI(api_key=OPENAI_API_KEY)
 rdb = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 
-if PINECONE_INDEX not in pc.list_indexes().names():
+pc = Pinecone(api_key=PINECONE_API_KEY)
+if INDEX_NAME not in pc.list_indexes().names():
     pc.create_index(
-        name=PINECONE_INDEX,
-        dimension=768,  
+        name=INDEX_NAME,
+        dimension=1536,
         metric="cosine",
         spec=ServerlessSpec(cloud="aws", region="us-east-1")
     )
-index = pc.Index(PINECONE_INDEX)
+index = pc.Index(INDEX_NAME)
 
 # -----------------------------
 # Helpers
 # -----------------------------
-@dataclass
-class DocChunk:
-    id: str
-    text: str
-    page: int
-    meta: Dict[str, Any]
-
-def num_tokens(s: str) -> int:
-    return max(1, len(s.split()) // 0.75)
-
-def pdf_to_pages(path: str) -> List[Tuple[int, str]]:
-    reader = PdfReader(path)
+def extract_pages(pdf_path: str):
+    """Extract text from PDF pages with OCR fallback."""
+    doc = fitz.open(pdf_path)
     pages = []
-    for i, p in enumerate(reader.pages, start=1):
-        txt = p.extract_text() or ""
-        txt = "\n".join(line.strip() for line in txt.splitlines())
-        pages.append((i, txt))
+    for i in range(doc.page_count):
+        page = doc.load_page(i)
+        text = page.get_text("text").strip()
+        if not text:
+            pix = page.get_pixmap(dpi=300)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            text = pytesseract.image_to_string(img).strip()
+        pages.append({"page_number": i+1, "text": text})
     return pages
 
-def chunk_text(text: str, page: int, tokens: int = CHUNK_TOKENS, overlap: int = CHUNK_OVERLAP):
-    words, out, buf = text.split(), [], []
-    for w in words:
-        buf.append(w)
-        if num_tokens(" ".join(buf)) >= tokens:
-            out.append((" ".join(buf), page))
-            buf = buf[-overlap:]
-    if buf:
-        out.append((" ".join(buf), page))
-    return out
+def get_embedding(text: str) -> np.ndarray:
+    resp = client.embeddings.create(model=EMBED_MODEL, input=text)
+    return np.array(resp.data[0].embedding, dtype='float32')
 
-def safe_split_text(text, max_len=MAX_CHUNK_TEXT):
-    pieces, start = [], 0
-    while start < len(text):
-        end = min(start + max_len, len(text))
-        pieces.append(text[start:end])
-        start = end
-    return pieces
-
-def flatten_embedding(embed):
-    if isinstance(embed, list) and all(isinstance(x, (float,int)) for x in embed):
-        return [float(x) for x in embed]
-    elif isinstance(embed, list) and all(isinstance(x, list) for x in embed):
-        return [float(x) for x in embed[0]]
-    raise ValueError("Unexpected embedding shape")
-
-# -----------------------------
-# PDF → Pinecone ingestion
-# -----------------------------
-def ingest_pdf_safe(path: str, source: str, namespace: str = DEFAULT_NAMESPACE, year: int = 2024):
-    pages = pdf_to_pages(path)
-    chunks: List[DocChunk] = []
-
-    for page, txt in pages:
-        for chunk_txt, p in chunk_text(txt, page, tokens=CHUNK_TOKENS, overlap=CHUNK_OVERLAP):
-            for piece in safe_split_text(chunk_txt, MAX_CHUNK_TEXT):
-                cid = f"{source}-{p}-{uuid.uuid4().hex[:8]}"
-                chunks.append(DocChunk(
-                    id=cid,
-                    text=piece,
-                    page=p,
-                    meta={"source": source, "page": p, "year": year, "namespace": namespace}
-                ))
-
+def ingest_pdf(pdf_path: str, source: str, namespace: str = DEFAULT_NAMESPACE):
+    pages = extract_pages(pdf_path)
     upserts = []
-    for i in range(0, len(chunks), 128):
-        batch = chunks[i:i+128]
-        texts = [c.text for c in batch]
-        resp = genai.embed_content(model=EMBED_MODEL, content=texts)
-        embeddings = []
-        if isinstance(resp, dict) and "embedding" in resp:
-            embeddings.append(flatten_embedding(resp["embedding"]))
-        elif isinstance(resp, list):
-            for r in resp:
-                embeddings.append(flatten_embedding(r.get("embedding")))
-        for c, vec in zip(batch, embeddings):
-            if len(vec) != 768:
-                raise ValueError(f"Embedding dimension mismatch: {len(vec)} != 768")
-            upserts.append({
-                "id": c.id,
-                "values": vec,
-                "metadata": {**c.meta, "text": c.text[:PREVIEW_LEN]}
-            })
-
+    for p in pages:
+        emb = get_embedding(p["text"])
+        vec_id = f"{source}-{p['page_number']}-{uuid.uuid4().hex[:8]}"
+        upserts.append({
+            "id": vec_id,
+            "values": emb.tolist(),
+            "metadata": {
+                "source": source,
+                "page": p["page_number"],
+                "text": p["text"][:PREVIEW_LEN]
+            }
+        })
     for i in range(0, len(upserts), 100):
         index.upsert(vectors=upserts[i:i+100], namespace=namespace)
-
-    return len(chunks)
+    print(f"Ingested {len(pages)} pages from {source} into Pinecone.")
 
 # -----------------------------
-# Retrieval + QA w/ session memory
-
-SYSTEM_PROMPT = [
+# System prompts
+# -----------------------------
+SYSTEM_PROMPTS = [
     "You are a helpful **math tutor assistant**.\n"
-    "Rules: Answer the user's math questions clearly and accurately. You may refer to textbooks as needed. Reject any irrelevant or harmful requests. Do not format responses using markdown.",
+    "Rules: Use the Chat Histroy, Answer math questions clearly and accurately. Use step-by-step reasoning and textbook context when available.",
 
     "You are a helpful **SQL assistant**.\n"
-    "Rules: Use the provided context when available. Write correct, efficient SQL queries and provide brief explanations when necessary. If essential context is missing, inform the user instead of guessing. Reject any irrelevant or harmful requests. Do not format responses using markdown.",
+    "Rules: Use the Chat Histroy, Write correct, efficient SQL queries using provided context if possible. Explain your queries briefly.",
 
     "You are a helpful **astronomy tutor assistant**.\n"
-    "Rules: Use provided textbook sources when applicable (not required), and cite them as [Source, p.Page] if used. Reject any irrelevant or harmful requests. Do not format responses using markdown."
+    "Rules: Use the chat histroy, Use textbook context when available and cite pages as [Source, p.Page]. Explain concepts clearly."
 ]
-
 
 DISCLAIMER = "Educational use only. Always double-check solutions."
 
-def retrieve(query: str, vector: str, namespace: str = DEFAULT_NAMESPACE, k: int = TOP_K) -> List[Dict[str, Any]]:
-    resp = genai.embed_content(
-        model=EMBED_MODEL,
-        content=query,
-        task_type="RETRIEVAL_QUERY",
-        output_dimensionality=768
-    )
-    grab = pc.Index(vector)
-    qvec = flatten_embedding(resp["embedding"])
-    res = grab.query(vector=qvec, top_k=k, include_metadata=True, namespace=namespace)
+# -----------------------------
+# Retrieval
+# -----------------------------
+def query_pinecone(query: str, top_k: int = TOP_K, namespace: str = DEFAULT_NAMESPACE):
+    qvec = get_embedding(query)
+    res = index.query(vector=qvec, top_k=top_k, include_metadata=True, namespace=namespace)
     hits = []
     for m in res.matches or []:
         if getattr(m, "score", 1.0) >= MIN_SIM:
-            hits.append({**(m.metadata or {}), "_score": m.score, "_id": m.id})
+            hits.append({
+                "id": m.id,
+                "score": m.score,
+                "text": m.metadata.get("text", ""),
+                "source": m.metadata.get("source", ""),
+                "page": m.metadata.get("page", "")
+            })
     return hits
 
-def build_messages(query: str, i: int, ctx: List[Dict[str, Any]], history: List[Dict[str, str]]):
-    # Construct the user content with or without context
+def build_prompt(query: str, ctx: List[Dict[str, Any]], role_index: int, history: List[Dict[str, str]]):
+    ctx_str = "\n---\n".join([f"[{c['source']}, p.{c['page']}]\n{c['text'][:1000]}" for c in ctx]) if ctx else ""
     if ctx:
-        ctx_str = "\n---\n".join(
-            [f"[{c['source']}, p.{c['page']}]\n{c['text'][:1000]}" for c in ctx]
-        )
-        user_content = (
-            f"Q: {query}\n\n"
-            f"Context:\n{ctx_str}\n\n"
-            f"Use the context above if relevant, otherwise answer using accurate general knowledge. Answer must be Step by Step\n"
-            f"Add a final line: '{DISCLAIMER}'"
-        )
+        user_content = f"Q: {query}\n\nContext:\n{ctx_str}\nAnswer step by step.\nAdd a final line: '{DISCLAIMER}'"
     else:
-        user_content = (
-            f"Q: {query}\n\n"
-            f"No textbook context found. Please answer using general astronomy knowledge. Answer Must be Step by Step\n"
-            f"Add a final line: '{DISCLAIMER}'"
-        )
+        user_content = f"Q: {query}\n\nNo context found. Answer using general knowledge.\nAdd a final line: '{DISCLAIMER}'"
 
-    # Start message text with the appropriate system prompt
-    msgs_text = SYSTEM_PROMPT[i] + "\n\n"
-
-    # Add previous chat history
+    # Combine system prompt, history, and user query
+    msgs_text = SYSTEM_PROMPTS[role_index] + "\n\n"
     for h in history:
         msgs_text += f"{h['role'].upper()}: {h['content']}\n"
-
-    # Append current user question with context
     msgs_text += f"USER: {user_content}"
 
-    return [{"role": "user", "parts": [msgs_text]}]
+    return [{"role": "user", "content": msgs_text}]
 
-
-def answer_query(query: str, vector: str, i: int, namespace: str = DEFAULT_NAMESPACE, session_id: str = None):
+# -----------------------------
+# Answer query with session memory
+# -----------------------------
+def answer_query(query: str, role_index: int, namespace: str = DEFAULT_NAMESPACE, session_id: str = None):
     session_id = session_id or str(uuid.uuid4())
     history = json.loads(rdb.get(session_id) or "[]")
 
-    ctx = retrieve(query, vector, namespace, TOP_K)
-    msgs = build_messages(query, i, ctx, history)
-    model = genai.GenerativeModel(GEN_MODEL)
-    resp = model.generate_content(msgs)
+    ctx = query_pinecone(query, TOP_K, namespace)
+    prompt = build_prompt(query, ctx, role_index, history)
+    resp = client.chat.completions.create(
+        model=GEN_MODEL,
+        messages=prompt
+    )
+    answer = resp.choices[0].message.content.strip()
 
-    answer = resp.text.strip()
-    # update session memory
+    # Update session memory
     history.append({"role": "user", "content": query})
     history.append({"role": "assistant", "content": answer})
     rdb.set(session_id, json.dumps(history), ex=SESSION_TTL)
@@ -217,18 +156,18 @@ def answer_query(query: str, vector: str, i: int, namespace: str = DEFAULT_NAMES
     }
 
 # -----------------------------
-# Lambda handler
+# Lambda-style handler
 # -----------------------------
 def handler(event, context):
     body = json.loads(event.get("body", "{}"))
-    choice = body.get("subject", "math")
+    subject = body.get("subject", "math")
     query = body.get("query", "Explain Pythagorean theorem")
     session_id = body.get("session_id")
     namespace = body.get("namespace", DEFAULT_NAMESPACE)
 
-    if choice == "math":
-        return answer_query(query, "math-index-gemini", 0, namespace, session_id)
-    elif choice == "sql":
-        return answer_query(query, "sql-index-gemini", 1, namespace, session_id)
-    elif choice == 'astro':
-        return answer_query(query, "astronemy-index-gemini", 2, namespace, session_id)
+    if subject == "math":
+        return answer_query(query, 0, "math", session_id)
+    elif subject == "sql":
+        return answer_query(query, 1, "sql", session_id)
+    elif subject == "astro":
+        return answer_query(query, 2, "astro", session_id)
